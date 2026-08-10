@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: bescom-power-alert
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_SMS_NUMBER
+        sync: false
+      - key: DATABASE_URL
+        sync: false

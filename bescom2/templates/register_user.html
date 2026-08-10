@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Users - BESCOM{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>👥 Registered Users</h1>
+    <p>Users registered here will receive SMS & WhatsApp alerts for their area and street.</p>
+</div>
+
+<div class="card">
+    <h2>➕ Register a User</h2>
+    {% if areas %}
+    <form method="POST">
+        <div class="two-col">
+            <div>
+                <label>Full Name</label>
+                <input type="text" name="name" placeholder="e.g. Rahul Sharma" required>
+            </div>
+            <div>
+                <label>Phone Number</label>
+                <input type="text" name="phone" placeholder="e.g. +919876543210" required>
+            </div>
+        </div>
+        <div class="two-col">
+            <div>
+                <label>Area</label>
+                <select name="area_id" required>
+                    {% for a in areas %}
+                    <option value="{{ a.id }}">{{ a.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label>Street / Block <span style="color:var(--muted);font-weight:400;">(optional)</span></label>
+                <input type="text" name="street" placeholder="e.g. 5th Block, 80 Feet Road">
+            </div>
+        </div>
+        <div class="hint">Phone must include country code — e.g. +91 for India. User will receive both SMS and WhatsApp alerts.</div>
+        <button type="submit">Register User</button>
+    </form>
+    {% else %}
+    <div class="empty-state">
+        <span class="icon">📍</span>
+        No areas added yet. Go to Areas page first.
+    </div>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h2>📋 All Users</h2>
+    {% if users %}
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Area</th>
+            <th>Street / Block</th>
+        </tr>
+        {% for u in users %}
+        <tr>
+            <td><b>{{ u.name }}</b></td>
+            <td>{{ u.phone }}</td>
+            <td><span class="area-tag">{{ u.area.name }}</span></td>
+            <td>
+                {% if u.street %}
+                <span class="street-tag">{{ u.street }}</span>
+                {% else %}
+                <span style="color:var(--muted);font-size:12px;">Entire area</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <span class="icon">👥</span>
+        No users registered yet.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

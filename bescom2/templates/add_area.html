@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Areas - BESCOM{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>📍 Manage Areas</h1>
+    <p>Add localities covered by your division. Coordinates are fetched automatically for map.</p>
+</div>
+
+<div class="card">
+    <h2>➕ Add New Area</h2>
+    <form method="POST">
+        <div class="two-col">
+            <div>
+                <label>Area Name</label>
+                <input type="text" name="name" placeholder="e.g. Koramangala" required>
+            </div>
+            <div>
+                <label>Pincode (optional)</label>
+                <input type="text" name="pincode" placeholder="e.g. 560034">
+            </div>
+        </div>
+        <div class="hint" style="margin-top:10px;">📍 Map coordinates are auto-fetched when you add the area!</div>
+        <button type="submit">Add Area</button>
+    </form>
+</div>
+
+<div class="card">
+    <h2>🗂️ Existing Areas</h2>
+    {% if areas %}
+    <table>
+        <tr>
+            <th>Area Name</th>
+            <th>Pincode</th>
+            <th>Map Status</th>
+        </tr>
+        {% for a in areas %}
+        <tr>
+            <td><span class="area-tag">{{ a.name }}</span></td>
+            <td>{{ a.pincode or '—' }}</td>
+            <td>
+                {% if a.latitude %}
+                <span style="color:var(--green);font-size:12px;font-weight:600;">✅ On Map ({{ "%.4f"|format(a.latitude) }}, {{ "%.4f"|format(a.longitude) }})</span>
+                {% else %}
+                <span style="color:var(--muted);font-size:12px;">⏳ Coordinates pending</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <span class="icon">📍</span>
+        No areas added yet.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

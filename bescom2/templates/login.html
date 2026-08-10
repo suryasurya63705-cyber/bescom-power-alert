@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - BESCOM Power Alert</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="login-page">
+<div class="login-box">
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for cat, msg in messages %}
+            <div class="flash {{ cat }}" style="margin-bottom:16px;border-radius:10px;">{{ msg }}</div>
+        {% endfor %}{% endif %}
+    {% endwith %}
+
+    <div class="login-card">
+        <div class="login-logo">⚡</div>
+        <div class="login-title">
+            <h1>BESCOM Admin Panel</h1>
+            <p>Sign in to manage power outage alerts</p>
+        </div>
+
+        <form method="POST">
+            <label>Username</label>
+            <input type="text" name="username" placeholder="Enter your username" required autofocus>
+
+            <label style="margin-top:14px;">Password</label>
+            <input type="password" name="password" placeholder="Enter your password" required>
+
+            <button type="submit" class="btn-login">Sign In →</button>
+        </form>
+
+        <div class="creds-box">
+            <strong>🔐 Default credentials:</strong>
+            Username: <b>admin</b> &nbsp;|&nbsp; Password: <b>bescom@123</b>
+        </div>
+
+        <div class="public-link">
+            Are you a resident? <a href="{{ url_for('public_register') }}">Register for alerts →</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

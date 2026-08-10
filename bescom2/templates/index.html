@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - BESCOM Power Alert{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <h1>⚡ Outage Dashboard</h1>
+    <p>Real-time overview of power outages across all registered areas in Bangalore.</p>
+</div>
+
+<div class="status-strip">
+    <div class="status-card {% if ongoing_count > 0 %}alert{% endif %}">
+        <div class="label">🔴 Active Outages</div>
+        <div class="value">{{ ongoing_count }}</div>
+    </div>
+    <div class="status-card ok">
+        <div class="label">✅ Resolved Today</div>
+        <div class="value">{{ resolved_count }}</div>
+    </div>
+    <div class="status-card">
+        <div class="label">📍 Areas Covered</div>
+        <div class="value">{{ area_count }}</div>
+    </div>
+</div>
+
+<!-- LIVE MAP -->
+<div class="map-wrapper">
+    <div class="map-header">
+        <h2>📍 Live Outage Map — Bangalore</h2>
+        <div class="map-legend">
+            <span><span class="dot-red"></span> Ongoing Outage</span>
+            <span><span class="dot-green"></span> Power Restored</span>
+        </div>
+    </div>
+    <div id="map" style="height:420px;width:100%;"></div>
+</div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+var map = L.map('map').setView([12.9716, 77.5946], 11);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 19
+}).addTo(map);
+
+var mapData = {{ map_data | safe }};
+
+mapData.forEach(function(o) {
+    var isOngoing = o.status === 'ongoing';
+    var color = isOngoing ? '#D64545' : '#2F9E5C';
+    var shadow = isOngoing ? 'rgba(214,69,69,0.4)' : 'rgba(47,158,92,0.4)';
+
+    var icon = L.divIcon({
+        className: '',
+        html: `<div style="
+            background:${color};
+            width:16px;height:16px;
+            border-radius:50%;
+            border:2.5px solid white;
+            box-shadow:0 0 0 3px ${shadow}, 0 2px 8px rgba(0,0,0,0.3);
+            ${isOngoing ? 'animation:blink 1.5s infinite;' : ''}
+        "></div>`,
+        iconSize: [16, 16],
+        iconAnchor: [8, 8]
+    });
+
+    L.marker([o.lat, o.lng], {icon: icon})
+        .addTo(map)
+        .bindPopup(`
+            <div style="font-family:Inter,sans-serif;min-width:180px;">
+                <div style="font-weight:800;font-size:14px;color:#0F2A4A;margin-bottom:6px;">📍 ${o.name}</div>
+                ${o.street ? `<div style="font-size:12px;color:#6B7689;margin-bottom:6px;">🛣️ ${o.street}</div>` : ''}
+                <div style="margin-bottom:4px;">
+                    <span style="
+                        background:${isOngoing ? '#FCE9E9' : '#E8F6EE'};
+                        color:${color};
+                        padding:3px 10px;
+                        border-radius:100px;
+                        font-size:11px;
+                        font-weight:700;
+                    ">${isOngoing ? '🔴 ONGOING' : '✅ RESOLVED'}</span>
+                </div>
+                ${isOngoing ? `
+                <div style="font-size:12px;color:#444;margin-top:8px;">
+                    <b>Reason:</b> ${o.reason}<br>
+                    <b>Restoration by:</b> ${o.time}
+                </div>` : ''}
+            </div>
+        `, {maxWidth: 220});
+});
+</script>
+
+<style>
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+</style>
+
+<!-- OUTAGE LOG -->
+<div class="card">
+    <h2>📋 Outage Log</h2>
+    {% if outages %}
+    <table>
+        <tr>
+            <th>Area</th>
+            <th>Street / Block</th>
+            <th>Reason</th>
+            <th>Reported At</th>
+            <th>Est. Restoration</th>
+            <th>Status</th>
+            <th></th>
+        </tr>
+        {% for o in outages %}
+        <tr>
+            <td><span class="area-tag">{{ o.area.name }}</span></td>
+            <td>
+                {% if o.street %}
+                <span class="street-tag">{{ o.street }}</span>
+                {% else %}
+                <span style="color:var(--muted);font-size:12px;">Entire area</span>
+                {% endif %}
+            </td>
+            <td>{{ o.reason }}</td>
+            <td>{{ o.created_at.strftime('%d %b, %I:%M %p') }}</td>
+            <td>{{ o.estimated_restoration.strftime('%d %b, %I:%M %p') }}</td>
+            <td><span class="badge {{ o.status }}">{{ o.status|capitalize }}</span></td>
+            <td>
+                {% if o.status == 'ongoing' %}
+                <form action="{{ url_for('resolve_outage', outage_id=o.id) }}" method="post" style="margin:0;">
+                    <button class="btn-resolve">✓ Mark Resolved</button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <span class="icon">⚡</span>
+        No outages reported yet. All areas are powered! 🎉
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
