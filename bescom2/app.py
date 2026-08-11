@@ -50,8 +50,8 @@ with app.app_context():
             conn.execute(text("ALTER TABLE outage ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'ongoing';"))
             conn.execute(text("ALTER TABLE outage ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW();"))
             conn.execute(text("ALTER TABLE outage ADD COLUMN IF NOT EXISTS resolved_at TIMESTAMP;"))
-            conn.execute(text("ALTER TABLE \"user\" ADD COLUMN IF NOT EXISTS street VARCHAR(200);"))
             conn.execute(text("ALTER TABLE outage ADD COLUMN IF NOT EXISTS start_time TIMESTAMP DEFAULT NOW();"))
+            conn.execute(text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS street VARCHAR(200);'))
             conn.commit()
     except Exception as e:
         logger.error(f"Migration check: {e}")
@@ -148,6 +148,7 @@ def register_user():
         name = request.form.get('name', '').strip()
         phone = request.form.get('phone', '').strip()
         area_id = request.form.get('area_id')
+        area_id = int(area_id) if area_id else None
         street = request.form.get('street', '').strip()
         if not phone.startswith('+'):
             flash('Phone must include country code, e.g. +91XXXXXXXXXX', 'error')
@@ -165,6 +166,7 @@ def public_register():
         name = request.form.get('name', '').strip()
         phone = request.form.get('phone', '').strip()
         area_id = request.form.get('area_id')
+        area_id = int(area_id) if area_id else None
         street = request.form.get('street', '').strip()
         if not name or not phone or not area_id:
             flash('Please fill all fields.', 'error')
@@ -187,6 +189,7 @@ def report_outage():
     areas = Area.query.all()
     if request.method == 'POST':
         area_id = request.form.get('area_id')
+        area_id = int(area_id) if area_id else None
         street = request.form.get('street', '').strip()
         reason = request.form.get('reason', '').strip()
         rest_str = request.form.get('estimated_restoration')
