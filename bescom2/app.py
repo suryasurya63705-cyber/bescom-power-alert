@@ -50,6 +50,8 @@ with app.app_context():
             conn.execute(text("ALTER TABLE outage ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'ongoing';"))
             conn.execute(text("ALTER TABLE outage ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW();"))
             conn.execute(text("ALTER TABLE outage ADD COLUMN IF NOT EXISTS resolved_at TIMESTAMP;"))
+            conn.execute(text("ALTER TABLE \"user\" ADD COLUMN IF NOT EXISTS street VARCHAR(200);"))
+            conn.execute(text("ALTER TABLE outage ADD COLUMN IF NOT EXISTS start_time TIMESTAMP DEFAULT NOW();"))
             conn.commit()
     except Exception as e:
         logger.error(f"Migration check: {e}")
