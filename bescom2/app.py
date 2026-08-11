@@ -34,12 +34,22 @@ login_manager.login_message_category = 'error'
 def load_user(user_id):
     return Admin.query.get(int(user_id))
 
+from sqlalchemy import text
+
 with app.app_context():
     db.create_all()
+    try:
+        with db.engine.connect() as conn:
+            conn.execute(text("ALTER TABLE area ADD COLUMN IF NOT EXISTS latitude FLOAT;"))
+            conn.execute(text("ALTER TABLE area ADD COLUMN IF NOT EXISTS longitude FLOAT;"))
+            conn.execute(text("ALTER TABLE outage ADD COLUMN IF NOT EXISTS latitude FLOAT;"))
+            conn.execute(text("ALTER TABLE outage ADD COLUMN IF NOT EXISTS longitude FLOAT;"))
+            conn.commit()
+    except Exception as e:
+        logger.error(f"Migration check: {e}")
     if not Admin.query.first():
         db.session.add(Admin(username='admin', password=generate_password_hash('bescom@123')))
         db.session.commit()
-
 def get_coordinates(query):
     try:
         url = "https://nominatim.openstreetmap.org/search"
