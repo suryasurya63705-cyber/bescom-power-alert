@@ -44,7 +44,19 @@ with app.app_context():
             conn.execute(text("ALTER TABLE area ADD COLUMN IF NOT EXISTS longitude FLOAT;"))
             conn.execute(text("ALTER TABLE outage ADD COLUMN IF NOT EXISTS latitude FLOAT;"))
             conn.execute(text("ALTER TABLE outage ADD COLUMN IF NOT EXISTS longitude FLOAT;"))
+            conn.execute(text("ALTER TABLE outage ADD COLUMN IF NOT EXISTS street VARCHAR(255);"))
+            conn.execute(text("ALTER TABLE outage ADD COLUMN IF NOT EXISTS reason VARCHAR(255);"))
+            conn.execute(text("ALTER TABLE outage ADD COLUMN IF NOT EXISTS estimated_restoration TIMESTAMP;"))
+            conn.execute(text("ALTER TABLE outage ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'ongoing';"))
+            conn.execute(text("ALTER TABLE outage ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW();"))
+            conn.execute(text("ALTER TABLE outage ADD COLUMN IF NOT EXISTS resolved_at TIMESTAMP;"))
+            conn.execute(text("ALTER TABLE area ADD COLUMN IF NOT EXISTS pincode VARCHAR(20);"))
             conn.commit()
+    except Exception as e:
+        logger.error(f"Migration check: {e}")
+    if not Admin.query.first():
+        db.session.add(Admin(username='admin', password=generate_password_hash('bescom@123')))
+        db.session.commit()
     except Exception as e:
         logger.error(f"Migration check: {e}")
     if not Admin.query.first():
